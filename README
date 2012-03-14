@@ -1,0 +1,19 @@
+== Configuration ==
+Currently hardcoded into clerkbot.py
+
+On top:
+
+- nickname
+- password
+- realname
+- versionName
+
+In the middle:
+
+- !staff reponse
+- global notice prefix
+- command channels (#cvn-staff, #cvn-bots)
+
+On the bottom:
+
+- channels
