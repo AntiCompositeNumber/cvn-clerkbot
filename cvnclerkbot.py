@@ -16,7 +16,7 @@ from twisted.internet import reactor, task, protocol
 from twisted.python import log
 from twisted.words.protocols import irc
 from twisted.application import internet, service
-import cvnclerkconfig as config
+import cvnclerkbotconfig as config
 if config.useMySQL: # We only need this import if we're want MySQL
 	from FurriesBotSQLdb import FurriesBotSQLdb as sqlclient
 
