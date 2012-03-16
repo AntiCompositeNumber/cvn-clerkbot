@@ -1,19 +1,12 @@
-== Configuration ==
-Currently hardcoded into clerkbot.py
-
-On top:
-
-- nickname
-- password
-- realname
-- versionName
-
-In the middle:
-
-- !staff reponse
-- global notice prefix
-- command channels (#cvn-staff, #cvn-bots)
-
-On the bottom:
-
-- channels
+== Set up ==
+1. Get the latest source from https://svn.toolserver.org/svnroot/p_cvn/trunk/CVN-ClerkBot/
+2. Make sure you have the required packages:
+   * python-twisted (used by cvnclerkbot.py)
+   * wikilog (used by cvnclerkbot.py)
+     Source: https://www.mediawiki.org/wiki/Manual:Pywikipediabot/wikilog.py/source
+     - pywikipedia (used by wikilog.py)
+       Source: https://www.mediawiki.org/wiki/Manual:Pywikipediabot
+   * FurriesBotSQLdb.py (optional, only if config.useMySQL is True)
+     - MySQLdb (used by FurriesBotSQLdb.py)
+3. Rename cvnclerkbotconfig-sample.py to cvnclerkbotconfig.py and edit the file
+   as needed.
