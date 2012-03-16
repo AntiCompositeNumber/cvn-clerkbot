@@ -54,11 +54,10 @@ class CVNClerkBot(irc.IRCClient):
 ##			 	self.privs.append(mask[0])
 			for channel in self.sqldb.fetch("SELECT ch_name FROM channels;", multi=True):
 				self.join(channel[0])
-		else: # I guess not D:
+#		else: # I guess not D:
 #			self.privs = config.masks
 #			for i in config.channels:
 #				self.join(i)
-				
 	def joined(self, channel):
 		self.channels.append(channel)
 		self.sendLine("WHO " + channel) # We have to send a WHO message to the server so we can get the current users with +o/+v
