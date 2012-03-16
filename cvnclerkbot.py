@@ -45,6 +45,8 @@ class CVNClerkBot(irc.IRCClient):
 		self.msg("NickServ", "ghost %s %s" % (config.nickname, config.password.partition(":")[2])) # .partition(":")[2] is the actual password of the bot, assuming you're using account:password format
 		self.msg("NickServ", "release %s %s" % (config.nickname, config.password.partition(":")[2]))
 		self.setNick(config.nickname)
+		for channel in config.channels:
+			self.join(channel)
 		if config.useMySQL: # Are we using MySQL?
 			self.sqldb = sqlclient(config.schema, config.sqlpw, config.sqlname, config.sqlhost, port=config.sqlport)
 ##			 for mask in self.sqldb.fetch("SELECT mask FROM priv;", multi=True):
