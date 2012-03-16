@@ -1,4 +1,4 @@
-# CVN-ClerkBot version 0.2 (2012-03-16)
+# CVN-ClerkBot version 1.2.2 (2012-03-16)
 #
 # Helperbot for the Countervandalism Network <http://countervandalism.net>.
 # For help on installing, check README.
@@ -27,12 +27,12 @@ class CVNClerkBot(irc.IRCClient):
 	statuslastmodtime = '?'
 	statuslastmodauthor = '?'
 	monthsnames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+	versionName = 'CVN-ClerkBot'
+	versionNum = '1.2.2'
+	versionEnv = "Python Twisted %s; Python %s" % (twisted.version.short(), sys.version.split()[0])
 	nickname = config.nickname
 	password = config.password
-	realname = config.realname
-	versionName = 'cvnclerkbot'
-	versionNum = '1.2.1'
-	versionEnv = 'python-twisted on Python 2.7'
+	realname = config.realname + "; " + versionName + " " + versionNum
 	lineRate = .5 # If we don't have this, we'll excess flood when we join channels/send a !globalnotice
 	privs = []
 	sqldb = None

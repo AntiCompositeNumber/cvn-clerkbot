@@ -6,8 +6,8 @@
 nickname = "CVN-ClerkBot"
 ## NickServ password
 password = ""
-## IRC real name (appended to this is " {version}")
-realname = "Helper bot for the CVN. CVN-ClerkBot "
+## IRC real name (appended to this is "; CVN-ClerkBot {version}")
+realname = "Helper bot for the CVN"
 # IRC server hostname
 HOST = "irc.freenode.net"
 # IRC server connecting port
