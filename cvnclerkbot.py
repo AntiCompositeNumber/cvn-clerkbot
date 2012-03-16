@@ -51,7 +51,7 @@ class CVNClerkBot(irc.IRCClient):
 			self.sqldb = sqlclient(config.schema, config.sqlpw, config.sqlname, config.sqlhost, port=config.sqlport)
 ##			 for mask in self.sqldb.fetch("SELECT mask FROM priv;", multi=True):
 ##			 	self.privs.append(mask[0])
-			for channel in self.sqldb.fetch("SELECT chan FROM channels;", multi=True):
+			for channel in self.sqldb.fetch("SELECT ch_name FROM channels;", multi=True):
 				self.join(channel[0])
 		else: # I guess not D:
 			self.privs = config.masks
@@ -141,7 +141,7 @@ class CVNClerkBot(irc.IRCClient):
 		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
 			self.join(rest)
 			if config.useMySQL:
-				self.sqldb.exe("INSERT INTO channels (chan) VALUES('" + rest + "');")
+				self.sqldb.exe("INSERT INTO channels (ch_name) VALUES('" + rest + "');")
 
 	def left(self, channel):
 		self.channels.remove(channel)
@@ -149,7 +149,7 @@ class CVNClerkBot(irc.IRCClient):
 			self.oplist[channel] = []
 			self.voicelist[channel] = []
 		if config.useMySQL:
-			self.sqldb.exe("DELETE FROM channels WHERE chan = '%s';" % chan)
+			self.sqldb.exe("DELETE FROM channels WHERE ch_name = '%s';" % channel)
 
 	def p(self, rest, nick, channel, user_host):
 		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
