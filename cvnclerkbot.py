@@ -272,6 +272,13 @@ class CVNClerkBot(irc.IRCClient):
 				self.oplist[channel].remove(user)
 			if user in self.voicelist[channel]:
 				self.voicelist[channel].remove(user)
+	def ctcpQuery_VERSION(self, user, channel, data):
+		if self.versionName:
+			nick = string.split(user,"!")[0]
+			self.ctcpMakeReply(nick, [('VERSION', '%s %s; %s' %
+						(self.versionName,
+						self.versionNum or '',
+						self.versionEnv or ''))])
 class CVNClerkBotFactory(protocol.ReconnectingClientFactory):
 	protocol = CVNClerkBot
 
