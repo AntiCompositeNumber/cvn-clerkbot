@@ -12,6 +12,7 @@
 # Distributed under the terms of the MIT license.
 import sys, time, datetime
 import wikilog
+import twisted
 from twisted.internet import reactor, task, protocol
 from twisted.python import log
 from twisted.words.protocols import irc
