@@ -114,9 +114,10 @@ class CVNClerkBot(irc.IRCClient):
 			for i in self.channels:
 				if i != '#cvn-staff' and i != '#cvn-bots':
 					self.notice(i, '\00304[Global notice from %s]:\003 %s' % (nick, rest))
-			return 'Global announcement dispatched.'
+			return 'Global notice has been sent to %s channels, %s.' % (len(self.channels), nick)
 		else:
-			return 'Nice try, %s, but that command can only be used via #cvn-staff ;)' % nick
+			self.notice(nick, 'Global notices may only be announced from #cvn-staff'
+			return
 
 	def lol(self, rest, nick, channel, user_host):
 		return "%s [%s] has called for LOL in %s" % (nick, user_host, channel)
