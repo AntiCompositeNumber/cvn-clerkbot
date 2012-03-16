@@ -10,7 +10,7 @@
 # (C) Krinkle <krinklemail@gmail.com>, 2010-2012
 #
 # Distributed under the terms of the MIT license.
-import sys, time, datetime
+import sys, time, datetime, string
 import wikilog
 import twisted
 from twisted.internet import reactor, task, protocol
@@ -55,9 +55,9 @@ class CVNClerkBot(irc.IRCClient):
 			for channel in self.sqldb.fetch("SELECT ch_name FROM channels;", multi=True):
 				self.join(channel[0])
 		else: # I guess not D:
-			self.privs = config.masks
-			for i in config.channels:
-				self.join(i)
+#			self.privs = config.masks
+#			for i in config.channels:
+#				self.join(i)
 				
 	def joined(self, channel):
 		self.channels.append(channel)
