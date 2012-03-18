@@ -1,4 +1,4 @@
-# CVN-ClerkBot version 1.2.3 (2012-03-19)
+# CVN-ClerkBot version 1.2.4 (2012-03-19)
 #
 # Helperbot for the Countervandalism Network <http://countervandalism.net>.
 # For help on installing, check README.
@@ -29,7 +29,7 @@ class CVNClerkBot(irc.IRCClient):
 	statuslastmodauthor = '?'
 	monthsnames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 	versionName = 'CVN-ClerkBot'
-	versionNum = '1.2.3'
+	versionNum = '1.2.4'
 	versionEnv = "Python Twisted %s; Python %s" % (twisted.version.short(), sys.version.split()[0])
 	nickname = config.nickname
 	password = config.password
@@ -172,7 +172,8 @@ class CVNClerkBot(irc.IRCClient):
 		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			self.quit(message = "Ordered by " + nick)
 			reactor.callLater(2, reactor.stop)
-
+	def command_quit(self, rest, nick, channel, user_host):
+		self.command_exit(rest, nick, channel, user_host)
 ##	def add(self, rest, nick, channel, user_host):
 ##		return self.addpriv(rest, nick, channel, user_host)
 ##
