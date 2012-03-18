@@ -11,6 +11,7 @@ class FurriesBotSQLdb(object):
 		self.cursor = self.conn.cursor()
 	def exe(self, query):
 		self.cursor.execute(query)
+		self.conn.commit()
 	def fetch(self, query, multi=True):
 		self.exe(query)
 		result = None

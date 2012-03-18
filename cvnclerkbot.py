@@ -1,4 +1,4 @@
-# CVN-ClerkBot version 1.2.2 (2012-03-16)
+# CVN-ClerkBot version 1.2.3 (2012-03-19)
 #
 # Helperbot for the Countervandalism Network <http://countervandalism.net>.
 # For help on installing, check README.
@@ -20,7 +20,7 @@ from twisted.application import internet, service
 import cvnclerkbotconfig as config
 if config.useMySQL: # We only need this import if we're want MySQL
 	from FurriesBotSQLdb import FurriesBotSQLdb as sqlclient
-
+	from MySQLdb import MySQLError
 class CVNClerkBot(irc.IRCClient):
 	currentstatus = 'All OK!'
 	msgs_help = "Give right: {{Right given|NickServname|Wikiname|rightstemplate|channel|diffid=000}} | Remove right: {{Right removed|NickServname|Wikiname|rightstemplate|channel|comment=Reason here}} (see !info for useful links)"
@@ -29,7 +29,7 @@ class CVNClerkBot(irc.IRCClient):
 	statuslastmodauthor = '?'
 	monthsnames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 	versionName = 'CVN-ClerkBot'
-	versionNum = '1.2.2'
+	versionNum = '1.2.3'
 	versionEnv = "Python Twisted %s; Python %s" % (twisted.version.short(), sys.version.split()[0])
 	nickname = config.nickname
 	password = config.password
@@ -38,6 +38,7 @@ class CVNClerkBot(irc.IRCClient):
 	privs = []
 	sqldb = None
 	channels = []
+	# these keys are the channels in which operator commands can be given to clerkbot by users with voice or op
 	oplist = {"#countervandalism": [], "#cvn-bots": []}
 	voicelist = {"#countervandalism": [], "#cvn-bots": []}
 
@@ -67,36 +68,22 @@ class CVNClerkBot(irc.IRCClient):
 		nick, sep, user_host = user.partition('!')
 		if message.startswith('!'):
 			command, sep, rest = message.lstrip('!').partition(' ')
-			if command == 'lol':
-				function = getattr(self, "lol")
-				r = function(rest, nick, channel, user_host)
-				if r != None:
-					self.msg(channel, r)
-				return
-			if command in dir(self) and command != 'join' and command != 'part' and command != 'log': # Because we have functions defined for 'join', 'part', and 'log', we can't getattr(self, command) then
-				function = getattr(self, command)
+			if "command_" + command in dir(self): # Because we have functions defined for 'join', 'part', and 'log', we can't getattr(self, command) then
+				function = getattr(self, "command_" + command)
 				try:
 					r = function(rest, nick, channel, user_host)
 					if r != None:
 						self.msg(channel, r)
 					return
-				except Exception, err:
-					self.msg(channel, "Error: " + str(err))
-			elif command == 'join' or command == 'part' or command == 'log' or command == 'quit':
-				cmds = {"join": "j", "part": "p", "log": "wlog", "quit": "exit"}
-				function = getattr(self, cmds[command])
-				try:
-					r = function(rest, nick, channel, user_host)
-					if r != None:
-						self.msg(channel, r)
-					return
+				except MySQLError, err:
+					self.msg(channel, "MySQL Error! " + str(err))
 				except Exception, err:
 					self.msg(channel, "Error: " + str(err))
 		elif message.startswith(self.nickname+':') or message.startswith(self.nickname+',') or message.startswith(self.nickname):
 			if message.lower() == self.nickname.lower()+', lol' or message.lower() == self.nickname.lower()+': lol':
 				self.msg(channel, 'lol')
 
-	def staff(self, rest, nick, channel, user_host):
+	def command_staff(self, rest, nick, channel, user_host):
 		if channel == self.nickname: # message sent directly to nickname
 			self.msg(nick, "Sorry, you need to use !staff in an actual channel.")
 			return
@@ -109,7 +96,7 @@ class CVNClerkBot(irc.IRCClient):
 		else: # Saying "Please ask in #countervandalism" makes no sense if they're already there
 			return "Thanks %s, staff have been notified of your request and should be around shortly to assist you." % nick
 
-	def globalnotice(self, rest, nick, channel, user_host):
+	def command_globalnotice(self, rest, nick, channel, user_host):
 		if channel == '#cvn-staff':
 			for i in self.channels:
 				if i != '#cvn-staff' and i != '#cvn-bots':
@@ -119,32 +106,34 @@ class CVNClerkBot(irc.IRCClient):
 			self.notice(nick, 'Global notices may only be announced from #cvn-staff')
 		return
 
-	def lol(self, rest, nick, channel, user_host):
+	def command_lol(self, rest, nick, channel, user_host):
 		return "%s [%s] has called for LOL in %s" % (nick, user_host, channel)
 
-	def wlog(self, rest, nick, channel, user_host):
-		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
+	def command_wlog(self, rest, nick, channel, user_host):
+		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			try:
 				wikilog.log(rest, nick)
 				return "Logged the message ( http://bit.ly/clogger ), " + nick + "."
 			except Exception, err:
 				return "I failed :( [%s]" % err
 
-	def rights(self, rest, nick, channel, user_host):
-		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
+	def command_rights(self, rest, nick, channel, user_host):
+		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			try:
 				wikilog.rights(rest, nick)
 				return "Rights Log ( http://bit.ly/rightslog ), " + nick + "."
 			except Exception, err:
 				return "I failed :( [%s]" % err
 
-	def j(self, rest, nick, channel, user_host):
-		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
+	def command_join(self, rest, nick, channel, user_host):
+		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			self.join(rest)
 			if config.useMySQL:
 				self.sqldb.exe("INSERT INTO channels (ch_name) VALUES('" + rest + "');")
-
-	def left(self, channel):
+	##def command_exe(self, rest, nick, channel, user_host):
+	##	if channel == '#cvn-staff':
+	##		exec(rest)
+	def command_left(self, channel):
 		self.channels.remove(channel)
 		if channel in self.oplist.keys():
 			self.oplist[channel] = []
@@ -152,21 +141,21 @@ class CVNClerkBot(irc.IRCClient):
 		if config.useMySQL:
 			self.sqldb.exe("DELETE FROM channels WHERE ch_name = '%s';" % channel)
 
-	def p(self, rest, nick, channel, user_host):
-		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
+	def command_part(self, rest, nick, channel, user_host):
+		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			if len(rest) > 0:
 				self.part(rest, "Requested by " + nick)
 			else:
 				self.part(channel, "Requested by " + nick)
 
-	def help(self, rest, nick, channel, user_host):
+	def command_help(self, rest, nick, channel, user_host):
 		return self.msgs_help
 
-	def info(self, rest, nick, channel, user_host):
+	def command_info(self, rest, nick, channel, user_host):
 		return self.info_help
 
-	def updatestatus(self, rest, nick, channel, user_host):
-		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
+	def command_updatestatus(self, rest, nick, channel, user_host):
+		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			try:
 				self.currentstatus = rest
 				now = datetime.datetime.utcnow()
@@ -176,11 +165,11 @@ class CVNClerkBot(irc.IRCClient):
 			except Exception, err:
 				return "Error updating status, " + nick + ". [%s]" % err
 
-	def status(self, rest, nick, channel, user_host):
+	def command_status(self, rest, nick, channel, user_host):
 		return "Status: " + self.currentstatus + " (Last modified by " + self.statuslastmodauthor + " at " + self.statuslastmodtime + ")"
 
-	def exit(self, rest, nick, channel, user_host):
-		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
+	def command_exit(self, rest, nick, channel, user_host):
+		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			self.quit(message = "Ordered by " + nick)
 			reactor.callLater(2, reactor.stop)
 
@@ -203,8 +192,8 @@ class CVNClerkBot(irc.IRCClient):
 ##		if user_host.partition("@")[2] in self.privs:
 ##			return "Privlist: " + ", ".join(self.privs)
 
-	def sqlconn(self, rest, nick, channel, user_host): # In case the SQL connection ever dies
-		if channel == "#cvn-staff" or (nick in self.oplist[channel] or nick in self.voicelist[channel]):
+	def command_sqlconn(self, rest, nick, channel, user_host): # In case the SQL connection ever dies
+		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			try:
 				self.sqldb = sqlclient(config.schema, config.sqlpw, config.sqlname, config.sqlhost)
 				return nick + ": Reconnected to MySQL server."
@@ -213,6 +202,8 @@ class CVNClerkBot(irc.IRCClient):
 
 	def irc_MODE(self, user, params):
 		# This is called upon a MODE message from the server
+		if not channel in self.oplist.keys():
+			return # oplist should only contain lists for trusted channels
 		channel, modes, args = params[0], params[1], params[2:]
 		if modes[0] not in '-+':
 			 modes = '+' + modes
