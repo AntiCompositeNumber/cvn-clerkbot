@@ -203,7 +203,7 @@ class CVNClerkBot(irc.IRCClient):
 
 	def irc_MODE(self, user, params):
 		# This is called upon a MODE message from the server
-		if not channel in self.oplist.keys():
+		if not params[0] in self.oplist.keys():
 			return # oplist should only contain lists for trusted channels
 		channel, modes, args = params[0], params[1], params[2:]
 		if modes[0] not in '-+':
