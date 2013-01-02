@@ -13,12 +13,13 @@
 import sys, time, datetime, string
 import wikilog
 import twisted
+import threading
 from twisted.internet import reactor, task, protocol
 from twisted.python import log
 from twisted.words.protocols import irc
 from twisted.application import internet, service
 import cvnclerkbotconfig as config
-if config.useMySQL: # We only need this import if we're want MySQL
+if config.useMySQL: # We only need these imports if we want MySQL
 	from FurriesBotSQLdb import FurriesBotSQLdb as sqlclient
 	from MySQLdb import MySQLError
 class CVNClerkBot(irc.IRCClient):
@@ -27,6 +28,7 @@ class CVNClerkBot(irc.IRCClient):
 	info_help = "Mailing list (*new*): http://bit.ly/cvnLatest / http://bit.ly/cvnMonth | Subscribe: https://lists.wikimedia.org/mailman/listinfo/cvn | Server admin Log: http://bit.ly/clogger | Rights log: http://bit.ly/rightslog | Toolserver: http://toolserver.org/~cvn/"
 	statuslastmodtime = '?'
 	statuslastmodauthor = '?'
+	gnoticeuser, gnoticemessage = "", "";
 	monthsnames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 	versionName = 'CVN-ClerkBot'
 	versionNum = '1.2.5'
@@ -62,7 +64,12 @@ class CVNClerkBot(irc.IRCClient):
 	def joined(self, channel):
 		self.channels.append(channel)
 		self.sendLine("WHO " + channel) # We have to send a WHO message to the server so we can get the current users with +o/+v
-		
+	
+	def gNotice(self):
+		for c in self.channels:
+			if c != "#cvn-staff" and c != "#cvn-bots":
+				self.notice(c, '\00304[Global notice from %s]:\003 %s' % (self.gnoticeuser, self.gnoticemessage))
+		self.msg("#cvn-staff", 'Global notice has been sent to %s channels, %s.' % (len(self.channels)-2, self.gnoticeuser)
 	def privmsg(self, user, channel, message):
 		#@TODO Deferreds
 		nick, sep, user_host = user.partition('!')
@@ -93,18 +100,18 @@ class CVNClerkBot(irc.IRCClient):
 			self.msg('#cvn-staff', '%s has requested !staff assistance in %s' % (nick, channel))
 		if channel != '#countervandalism':
 			return 'Thanks %s, staff have been notified of your request and should be around shortly to assist you. In case nobody answers, please ask in #countervandalism if you have not already done so.' % nick
-		else: # Saying "Please ask in #countervandalism" makes no sense if they're already there
+		else:
 			return "Thanks %s, staff have been notified of your request and should be around shortly to assist you." % nick
 
 	def command_globalnotice(self, rest, nick, channel, user_host):
 		if channel == '#cvn-staff':
-			for i in self.channels:
-				if i != '#cvn-staff' and i != '#cvn-bots':
-					self.notice(i, '\00304[Global notice from %s]:\003 %s' % (nick, rest))
-			return 'Global notice has been sent to %s channels, %s.' % (len(self.channels), nick)
+			self.gnoticeuser, self.gnoticemessage = nick, rest;
+			thr = threading.Thread(self.gNotice);
+			thr.start();
+			return nick + ": Dispatching global notice"
 		else:
 			self.notice(nick, 'Global notices may only be announced from #cvn-staff')
-		return
+			return
 
 	def command_lol(self, rest, nick, channel, user_host):
 		return "%s [%s] has called for LOL in %s" % (nick, user_host, channel)
@@ -204,7 +211,7 @@ class CVNClerkBot(irc.IRCClient):
 	def irc_MODE(self, user, params):
 		# This is called upon a MODE message from the server
 		if not params[0] in self.oplist.keys():
-			return # oplist should only contain lists for trusted channels
+			return # Not a channel we care about
 		channel, modes, args = params[0], params[1], params[2:]
 		if modes[0] not in '-+':
 			 modes = '+' + modes
