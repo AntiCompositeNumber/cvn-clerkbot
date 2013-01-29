@@ -7,11 +7,26 @@ import MySQLdb #REQUIRES
 class FurriesBotSQLdb(object):
 	def __init__(self, db, pw, user, host, port=None):
 		if port == None: port = 3306
+		self.db = db
+		self.host = host
+		self.pw = pw
+		self.user = user
+		self.port = port
 		self.conn = MySQLdb.connect(db=db, host=host, passwd=pw, user=user, port=port)
 		self.cursor = self.conn.cursor()
+		
 	def exe(self, query):
-		self.cursor.execute(query)
-		self.conn.commit()
+		try:
+			self.cursor.execute(query)
+			self.conn.commit()
+		except MySQLdb.OperationalError: # Server connection lost
+			self.reconnect()
+			self.exe(query)
+			
+	def reconnect(self):
+		self.conn = MySQLdb.connect(db=self.db, host=self.host, passwd=self.pw, user=self.user, port=self.port)
+		self.cursor = self.conn.cursor()
+		
 	def fetch(self, query, multi=True):
 		self.exe(query)
 		result = None
@@ -27,5 +42,5 @@ class FurriesBotSQLdb(object):
 			else:
 				result = self.cursor.fetchone()[0]
 				return result
-		except MySQLError:
-			raise MySQLError
+		except MySQLdb.MySQLError:
+			raise
