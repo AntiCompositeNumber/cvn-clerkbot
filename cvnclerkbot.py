@@ -69,7 +69,8 @@ class CVNClerkBot(irc.IRCClient):
 		for c in self.channels:
 			if c != "#cvn-staff" and c != "#cvn-bots":
 				self.notice(c, '\00304[Global notice from %s]:\003 %s' % (self.gnoticeuser, self.gnoticemessage))
-		self.msg("#cvn-staff", 'Global notice has been sent to %s channels, %s.' % (len(self.channels)-2, self.gnoticeuser)
+		self.msg("#cvn-staff", 'Global notice has been sent to %s channels, %s.' % (len(self.channels)-2, self.gnoticeuser))
+		
 	def privmsg(self, user, channel, message):
 		#@TODO Deferreds
 		nick, sep, user_host = user.partition('!')
