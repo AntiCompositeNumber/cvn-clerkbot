@@ -107,7 +107,7 @@ class CVNClerkBot(irc.IRCClient):
 	def command_globalnotice(self, rest, nick, channel, user_host):
 		if channel == '#cvn-staff':
 			self.gnoticeuser, self.gnoticemessage = nick, rest;
-			thr = threading.Thread(self.gNotice);
+			thr = threading.Thread(target=self.gNotice);
 			thr.start();
 			return nick + ": Dispatching global notice"
 		else:
