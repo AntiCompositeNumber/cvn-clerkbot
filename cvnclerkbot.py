@@ -14,6 +14,7 @@ import sys, time, datetime, string
 import wikilog
 import twisted
 import threading
+
 from twisted.internet import reactor, task, protocol
 from twisted.python import log
 from twisted.words.protocols import irc
@@ -28,14 +29,14 @@ class CVNClerkBot(irc.IRCClient):
 	info_help = "Mailing list (*new*): http://bit.ly/cvnLatest / http://bit.ly/cvnMonth | Subscribe: https://lists.wikimedia.org/mailman/listinfo/cvn | Server admin Log: http://bit.ly/clogger | Rights log: http://bit.ly/rightslog | Toolserver: http://toolserver.org/~cvn/"
 	statuslastmodtime = '?'
 	statuslastmodauthor = '?'
-	gnoticeuser, gnoticemessage = "", "";
+	gnoticeuser, gnoticemessage = "", ""
 	monthsnames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 	versionName = 'CVN-ClerkBot'
 	versionNum = '1.2.5'
-	versionEnv = "Python Twisted %s; Python %s" % (twisted.version.short(), sys.version.split()[0])
+	versionEnv = "Python Twisted %s Python %s" % (twisted.version.short(), sys.version.split()[0])
 	nickname = config.nickname
 	password = config.password
-	realname = config.realname + "; " + versionName + " " + versionNum
+	realname = config.realname + " " + versionName + " " + versionNum
 	lineRate = .5 # If we don't have this, we'll excess flood when we join channels/send a !globalnotice
 	privs = []
 	sqldb = None
@@ -45,6 +46,8 @@ class CVNClerkBot(irc.IRCClient):
 	voicelist = {"#countervandalism": [], "#cvn-bots": []}
 
 	def signedOn(self):
+		if twisted.version.major >= 12:
+			self.heartbeatInterval = 30
 		self.msg("NickServ", "id " + config.password.partition(":")[2])
 		self.msg("NickServ", "ghost %s %s" % (config.nickname, config.password.partition(":")[2])) # .partition(":")[2] is the actual password of the bot, assuming you're using account:password format
 		self.msg("NickServ", "release %s %s" % (config.nickname, config.password.partition(":")[2]))
@@ -53,14 +56,9 @@ class CVNClerkBot(irc.IRCClient):
 			self.join(channel)
 		if config.useMySQL: # Are we using MySQL?
 			self.sqldb = sqlclient(config.schema, config.sqlpw, config.sqlname, config.sqlhost, port=config.sqlport)
-##			 for mask in self.sqldb.fetch("SELECT mask FROM priv;", multi=True):
-##			 	self.privs.append(mask[0])
-			for channel in self.sqldb.fetch("SELECT ch_name FROM channels;", multi=True):
+			for channel in self.sqldb.fetch("SELECT ch_name FROM channels", multi=True):
 				self.join(channel[0])
-#		else: # I guess not D:
-#			self.privs = config.masks
-#			for i in config.channels:
-#				self.join(i)
+
 	def joined(self, channel):
 		self.channels.append(channel)
 		self.sendLine("WHO " + channel) # We have to send a WHO message to the server so we can get the current users with +o/+v
@@ -76,16 +74,16 @@ class CVNClerkBot(irc.IRCClient):
 		nick, sep, user_host = user.partition('!')
 		if message.startswith('!'):
 			command, sep, rest = message.lstrip('!').partition(' ')
-			if "command_" + command in dir(self): # Because we have functions defined for 'join', 'part', and 'log', we can't getattr(self, command) then
+			if hasattr(self, "command_" + command):
 				function = getattr(self, "command_" + command)
 				try:
 					r = function(rest, nick, channel, user_host)
 					if r != None:
 						self.msg(channel, r)
 					return
-				except MySQLError, err:
-					self.msg(channel, "MySQL Error! " + str(err))
-				except Exception, err:
+				except MySQLError as err:
+					self.msg(channel, "MySQL Error: " + str(err))
+				except Exception as err:
 					self.msg(channel, str(err.__class__.__name__) + ": " + str(err))
 		elif message.startswith(self.nickname+':') or message.startswith(self.nickname+',') or message.startswith(self.nickname):
 			if message.lower() == self.nickname.lower()+', lol' or message.lower() == self.nickname.lower()+': lol':
@@ -106,9 +104,9 @@ class CVNClerkBot(irc.IRCClient):
 
 	def command_globalnotice(self, rest, nick, channel, user_host):
 		if channel == '#cvn-staff':
-			self.gnoticeuser, self.gnoticemessage = nick, rest;
-			thr = threading.Thread(target=self.gNotice);
-			thr.start();
+			self.gnoticeuser, self.gnoticemessage = nick, rest
+			thr = threading.Thread(target=self.gNotice, group=None)
+			thr.start()
 			return nick + ": Dispatching global notice"
 		else:
 			self.notice(nick, 'Global notices may only be announced from #cvn-staff')
@@ -137,17 +135,15 @@ class CVNClerkBot(irc.IRCClient):
 		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			self.join(rest)
 			if config.useMySQL:
-				self.sqldb.exe("INSERT INTO channels (ch_name) VALUES('" + rest + "');")
-	##def command_exe(self, rest, nick, channel, user_host):
-	##	if channel == '#cvn-staff':
-	##		exec(rest)
+				self.sqldb.exe("INSERT INTO channels (ch_name) VALUES('" + rest + "')")
+
 	def command_left(self, channel):
 		self.channels.remove(channel)
 		if channel in self.oplist.keys():
 			self.oplist[channel] = []
 			self.voicelist[channel] = []
 		if config.useMySQL:
-			self.sqldb.exe("DELETE FROM channels WHERE ch_name = '%s';" % channel)
+			self.sqldb.exe("DELETE FROM channels WHERE ch_name = '%s'" % channel)
 
 	def command_part(self, rest, nick, channel, user_host):
 		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
@@ -180,26 +176,9 @@ class CVNClerkBot(irc.IRCClient):
 		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
 			self.quit(message = "Ordered by " + nick)
 			reactor.callLater(2, reactor.stop)
+			
 	def command_quit(self, rest, nick, channel, user_host):
 		self.command_exit(rest, nick, channel, user_host)
-##	def add(self, rest, nick, channel, user_host):
-##		return self.addpriv(rest, nick, channel, user_host)
-##
-##	def addpriv(self, rest, nick, channel, user_host):
-##		if user_host.partition("@")[2] in self.privs:
-##			if self.useMySQL:
-##				self.sqldb.exe("INSERT INTO priv (mask) VALUES('%s');" % rest)
-##			self.privs.append(rest)
-##
-##	def delpriv(self, rest, nick, channel, user_host):
-##		if user_host.partition("@")[2] in self.privs:
-##			if self.userMySQL:
-##				self.sqldb.exe("DELETE FROM priv WHERE mask = '%s';" % rest)
-##			self.privs.remove(rest)
-##
-##	def priv(self, rest, nick, channel, user_host):
-##		if user_host.partition("@")[2] in self.privs:
-##			return "Privlist: " + ", ".join(self.privs)
 
 	def command_sqlconn(self, rest, nick, channel, user_host): # In case the SQL connection ever dies
 		if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
@@ -276,10 +255,11 @@ class CVNClerkBot(irc.IRCClient):
 	def ctcpQuery_VERSION(self, user, channel, data):
 		if self.versionName:
 			nick = string.split(user,"!")[0]
-			self.ctcpMakeReply(nick, [('VERSION', '%s %s; %s' %
+			self.ctcpMakeReply(nick, [('VERSION', '%s %s %s' %
 						(self.versionName,
 						self.versionNum or '',
 						self.versionEnv or ''))])
+						
 class CVNClerkBotFactory(protocol.ReconnectingClientFactory):
 	protocol = CVNClerkBot
 
