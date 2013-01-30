@@ -86,7 +86,7 @@ class CVNClerkBot(irc.IRCClient):
 				except MySQLError, err:
 					self.msg(channel, "MySQL Error! " + str(err))
 				except Exception, err:
-					self.msg(channel, "Error: " + str(err))
+					self.msg(channel, str(err.__class__.__name__) + ": " + str(err))
 		elif message.startswith(self.nickname+':') or message.startswith(self.nickname+',') or message.startswith(self.nickname):
 			if message.lower() == self.nickname.lower()+', lol' or message.lower() == self.nickname.lower()+': lol':
 				self.msg(channel, 'lol')
