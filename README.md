@@ -1,6 +1,6 @@
-== Set up ==
+== Install ==
 
-1. Get the latest source from https://svn.toolserver.org/svnroot/p_cvn/trunk/CVN-ClerkBot/
+1. Get the latest source from https://github.com/countervandalism/CVNClerkBot
 
 2. Make sure you have the required packages:
    - python-twisted (used by cvnclerkbot.py)
