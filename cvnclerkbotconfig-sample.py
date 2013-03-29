@@ -1,6 +1,7 @@
-# Configuration file for clerkbot.py
+# Configuration for clerkbot
 
-# Required settings
+
+# Required
 
 ## IRC nick name, also used to identify with NickServ
 nickname = "CVN-ClerkBot"
@@ -13,15 +14,19 @@ HOST = "irc.freenode.net"
 # IRC server connecting port
 PORT = 6667
 
-# Static configuration (used when useMySQL is not True)
+
+# Static
 
 ## Initial list of channels to join onconnect
 channels = ["#cvn-sandbox"]
 
+
 # MySQL config
 
-## None of the below will be used unless useMySQL is True
 useMySQL = False
+
+## The below will only be used if useMySQL is True
+
 ## MySQL server to connect to
 sqlhost = ""
 ## Port to connect to
