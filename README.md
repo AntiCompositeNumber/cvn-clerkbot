@@ -1,4 +1,4 @@
-# CVNClerkBot
+# [![Build Status](https://travis-ci.org/countervandalism/CVNClerkBot.png)](https://travis-ci.org/countervandalism/CVNClerkBot) CVNClerkBot
 
 ## Get started
 
