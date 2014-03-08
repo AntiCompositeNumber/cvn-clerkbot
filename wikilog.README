@@ -1,0 +1,28 @@
+
+- site=wikipedia.getSite('en','samplewiki')
+As mentioned before, this script uses the wikipedia module. Make sure the family
+is defined.
+Example values:
+		site=wikipedia.getSite('nl','wikipedia')
+		site=wikipedia.getSite('meta','meta')
+		site=wikipedia.getSite('en','mycustomwiki')
+
+
+- logname=u"Server_admin_log"
+Full page name of the page on the choosen wiki on which the "!log"-messages are stored.
+Spaces should be converted to underscores.
+Before the bot is first ran this page should contain the following wikitext:
+
+	== January 1 ==
+	* 00:00 Foobar: Hello world.
+
+This may be removed after the first successful save has been made
+
+- rightsname=u"Rights_log"
+Full page name of the page where the "!rights"-messages are stored.
+Before the bot is first ran this page should contain the following wikitext:
+
+	== January 1 ==
+	* 00:00 Foobar: Hello world.
+
+This may be removed after the first successful save has been made
