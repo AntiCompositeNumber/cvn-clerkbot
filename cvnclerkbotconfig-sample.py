@@ -1,13 +1,14 @@
 # Configuration for clerkbot
 
-
+#
 # Required
+#
 
-## IRC nick name, also used to identify with NickServ
+# IRC nick name, also used to identify with NickServ
 nickname = "CVN-ClerkBot"
-## NickServ password
+# NickServ password
 password = ""
-## IRC real name (appended to this is "; CVN-ClerkBot {version}")
+# IRC real name (appended to this is "; CVN-ClerkBot {version}")
 realname = "Helper bot for the CVN"
 # IRC server hostname
 HOST = "irc.freenode.net"
@@ -15,27 +16,29 @@ HOST = "irc.freenode.net"
 PORT = 6667
 
 
+#
 # Static
+#
 
-## Initial list of channels to join onconnect
+# Initial list of channels to join onconnect
 channels = ["#cvn-sandbox"]
 
-
+#
 # MySQL config
-
+#
 useMySQL = False
 
-## The below will only be used if useMySQL is True
+# The below will only be used if useMySQL is True
 
-## MySQL server to connect to
+# MySQL server to connect to
 sqlhost = ""
-## Port to connect to
+# Port to connect to
 sqlport = 3306
-## MySQL server username
-## This mysql user needs the rights to use SELECT, DELETE, and INSERT statements
+# MySQL server username
+# This mysql user needs the rights to use SELECT, DELETE, and INSERT statements
 sqlname = ""
-## Password for the above username
+# Password for the above username
 sqlpw = ""
-## Name of the database to use
-## The database must have at least one table, "channels"
+# Name of the database to use
+# The database must have at least one table, "channels"
 schema = ""
