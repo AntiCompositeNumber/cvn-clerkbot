@@ -72,7 +72,7 @@ class CVNClerkBot(irc.IRCClient):
         self.msg("#cvn-staff", 'Global notice has been sent to %s channels, %s.' % (len(self.channels) - 2, self.gnoticeuser))
 
     def privmsg(self, user, channel, message):
-        #@TODO Deferreds
+        # TODO: Deferreds
         nick, sep, user_host = user.partition('!')
         if message.startswith('!'):
             command, sep, rest = message.lstrip('!').partition(' ')
