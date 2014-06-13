@@ -44,7 +44,9 @@ sqlpw = ""
 # The database must have at least one table, "channels"
 schema = ""
 
-## Example:
+#
+# Example:
+#
 # useMySQL = True
 # sqlhost = "localhost"
 # sqlport = 3306
