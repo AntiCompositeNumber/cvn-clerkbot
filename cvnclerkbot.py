@@ -97,9 +97,9 @@ class CVNClerkBot(irc.IRCClient):
             self.msg(nick, "Sorry, you need to use !staff in an actual channel.")
             return
         if len(rest) > 0:
-            self.msg('#cvn-staff', '%s has requested !staff assistance in %s (Details provided: %s)' % (nick, channel, rest))
+            self.msg('#cvn-staff', '%s [%s] has requested !staff assistance in %s (Details provided: %s)' % (nick, user_host, channel, rest))
         else:
-            self.msg('#cvn-staff', '%s has requested !staff assistance in %s' % (nick, channel))
+            self.msg('#cvn-staff', '%s [%s] has requested !staff assistance in %s' % (nick, user_host, channel))
         if channel != '#countervandalism':
             return 'Thanks %s, staff have been notified of your request and should be around shortly to assist you. In case nobody answers, please ask in #countervandalism if you have not already done so.' % nick
         else:
