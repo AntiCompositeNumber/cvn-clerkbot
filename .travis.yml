@@ -5,3 +5,10 @@ install:
   - sudo pip install pep8
 script:
   - pep8 . --ignore=E501
+notifications:
+  email: false
+  irc:
+    channels:
+      - "chat.freenode.net#countervandalism"
+    template:
+      - "%{repository}#%{build_number} (%{branch} - %{commit}: %{author}) %{message} - %{build_url}"
