@@ -37,7 +37,7 @@ class CVNClerkBot(irc.IRCClient):
     nickname = config.nickname
     password = config.password
     realname = config.realname + " " + versionName + " " + versionNum
-    lineRate = .5  # If we don't have this, we'll excess flood when we join channels/send a !globalnotice
+    lineRate = .8  # If we don't have this, we'll excess flood when we join channels/send a !globalnotice
     privs = []
     sqldb = None
     channels = []
