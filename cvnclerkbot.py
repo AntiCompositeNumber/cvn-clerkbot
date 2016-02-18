@@ -1,11 +1,11 @@
-# CVN-ClerkBot
+# CVNClerkBot
 #
 # Helperbot for the Countervandalism Network <http://countervandalism.net>.
 # For help on installing, check README.md.
 #
-# @version 1.2.6 (2013-03-29)
+# @version 2.0.0 (2016-02-18)
 # @author Daniel Salciccioli <sactage@sactage.com>, 2012
-# @author Krinkle <krinklemail@gmail.com>, 2010-2013
+# @author Timo Tijhof <krinklemail@gmail.com>, 2010-2016
 # @license Distributed under the terms of the MIT license.
 import sys
 import datetime
@@ -25,18 +25,17 @@ if config.useMySQL:  # We only need these imports if we want MySQL
 
 class CVNClerkBot(irc.IRCClient):
     currentstatus = 'All OK!'
-    msgs_help = "Give right: {{Right given|NickServname|Wikiname|rightstemplate|channel|diffid=000}} | Remove right: {{Right removed|NickServname|Wikiname|rightstemplate|channel|comment=Reason here}} (see !info for useful links)"
-    info_help = "Mailing list (*new*): http://bit.ly/cvnLatest / http://bit.ly/cvnMonth | Subscribe: https://lists.wikimedia.org/mailman/listinfo/cvn | Server admin Log: http://bit.ly/clogger | Rights log: http://bit.ly/rightslog | Toolserver: http://toolserver.org/~cvn/"
+    msgs_help = "Give right: {{Right given|NickServname|Wikiname|rightstemplate|channel|diffid=000}} | Remove right: {{Right removed|NickServname|Wikiname|rightstemplate|channel|comment=Reason here}}"
     statuslastmodtime = '?'
     statuslastmodauthor = '?'
     gnoticeuser, gnoticemessage = "", ""
     monthsnames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
-    versionName = 'CVN-ClerkBot'
-    versionNum = '1.2.6'
+    versionName = 'CVNClerkBot'
+    versionNum = '2.0.0'
     versionEnv = "Python Twisted %s Python %s" % (twisted.version.short(), sys.version.split()[0])
     nickname = config.nickname
     password = config.password
-    realname = config.realname + " " + versionName + " " + versionNum
+    realname = versionName + " " + versionNum + " - " + versionEnv
     lineRate = .8  # If we don't have this, we'll excess flood when we join channels/send a !globalnotice
     privs = []
     sqldb = None
@@ -56,7 +55,7 @@ class CVNClerkBot(irc.IRCClient):
         for channel in config.channels:
             self.join(channel)
         if config.useMySQL:
-            self.sqldb = sqlclient(config.schema, config.sqlpw, config.sqlname, config.sqlhost, port=config.sqlport)
+            self.sqldb = sqlclient(config.sqldbname, config.sqlpw, config.sqluser, config.sqlhost, port=config.sqlport)
             for channel in self.sqldb.fetch("SELECT ch_name FROM channels", multi=True):
                 self.join(channel[0])
 
@@ -118,14 +117,6 @@ class CVNClerkBot(irc.IRCClient):
     def command_lol(self, rest, nick, channel, user_host):
         return "%s [%s] has called for LOL in %s" % (nick, user_host, channel)
 
-    def command_log(self, rest, nick, channel, user_host):
-        if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
-            try:
-                wikilog.log(rest, nick)
-                return "Logged the message ( http://bit.ly/clogger ), " + nick + "."
-            except Exception, err:
-                return "I failed :( [%s]" % err
-
     def command_rights(self, rest, nick, channel, user_host):
         if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
             try:
@@ -158,9 +149,6 @@ class CVNClerkBot(irc.IRCClient):
     def command_help(self, rest, nick, channel, user_host):
         return self.msgs_help
 
-    def command_info(self, rest, nick, channel, user_host):
-        return self.info_help
-
     def command_updatestatus(self, rest, nick, channel, user_host):
         if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
             try:
@@ -187,7 +175,7 @@ class CVNClerkBot(irc.IRCClient):
     def command_sqlconn(self, rest, nick, channel, user_host):
         if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
             try:
-                self.sqldb = sqlclient(config.schema, config.sqlpw, config.sqlname, config.sqlhost)
+                self.sqldb = sqlclient(config.sqldbname, config.sqlpw, config.sqluser, config.sqlhost)
                 return nick + ": Reconnected to MySQL server."
             except Exception, err:
                 return "Error: " + str(err)
