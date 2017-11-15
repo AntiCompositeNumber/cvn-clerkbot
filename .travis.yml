@@ -1,9 +1,11 @@
+sudo: false
 language: python
 python:
   - "2.7"
 install:
-  - sudo pip install pep8
+  - pip install pep8
 script:
+  # E501: line too long
   - pep8 . --ignore=E501
 notifications:
   email: false
