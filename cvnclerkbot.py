@@ -246,6 +246,7 @@ class CVNClerkBot(irc.IRCClient):
 class CVNClerkBotFactory(protocol.ReconnectingClientFactory):
     protocol = CVNClerkBot
 
+
 if __name__ == '__main__':
     reactor.connectTCP(config.HOST, config.PORT, CVNClerkBotFactory())
     log.startLogging(sys.stdout)
