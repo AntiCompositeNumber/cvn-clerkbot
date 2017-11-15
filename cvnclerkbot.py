@@ -10,7 +10,6 @@
 import sys
 import datetime
 import string
-import wikilog
 import twisted
 import threading
 
@@ -24,19 +23,17 @@ if config.useMySQL:  # We only need these imports if we want MySQL
 
 
 class CVNClerkBot(irc.IRCClient):
-    currentstatus = 'All OK!'
-    msgs_help = "Give right: {{Right given|NickServname|Wikiname|rightstemplate|channel|diffid=000}} | Remove right: {{Right removed|NickServname|Wikiname|rightstemplate|channel|comment=Reason here}}"
-    statuslastmodtime = '?'
-    statuslastmodauthor = '?'
     gnoticeuser, gnoticemessage = "", ""
-    monthsnames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     versionName = 'CVNClerkBot'
-    versionNum = '2.0.0'
+    versionNum = '2.1.0'
     versionEnv = "Python Twisted %s Python %s" % (twisted.version.short(), sys.version.split()[0])
     nickname = config.nickname
     password = config.password
+    # 'realname' is used by the parent class!
     realname = versionName + " " + versionNum + " - " + versionEnv
-    lineRate = .8  # If we don't have this, we'll excess flood when we join channels/send a !globalnotice
+    # 'lineRate' is used by the parent class!
+    # If we don't have this, we'll excess flood when we join channels/send a !globalnotice
+    lineRate = .8
     privs = []
     sqldb = None
     channels = []
@@ -117,14 +114,6 @@ class CVNClerkBot(irc.IRCClient):
     def command_lol(self, rest, nick, channel, user_host):
         return "%s [%s] has called for LOL in %s" % (nick, user_host, channel)
 
-    def command_rights(self, rest, nick, channel, user_host):
-        if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
-            try:
-                wikilog.rights(rest, nick)
-                return "Rights Log ( http://bit.ly/rightslog ), " + nick + "."
-            except Exception, err:
-                return "I failed :( [%s]" % err
-
     def command_join(self, rest, nick, channel, user_host):
         if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
             self.join(rest)
@@ -141,27 +130,18 @@ class CVNClerkBot(irc.IRCClient):
 
     def command_part(self, rest, nick, channel, user_host):
         if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
-            if len(rest) > 0:
-                self.part(rest, "Requested by " + nick)
-            else:
-                self.part(channel, "Requested by " + nick)
+            # "!part <channel>" or plain "!part" to part the current channel
+            channel_name = rest if len(rest) > 0 else channel
+            self.part(channel_name, "Requested by " + nick)
+            self.channels.remove(channel_name)
+            if channel_name in self.oplist.keys():
+                self.oplist[channel_name] = []
+                self.voicelist[channel_name] = []
+            if config.useMySQL:
+                self.sqldb.exe("DELETE FROM channels WHERE ch_name = '%s'" % channel_name)
 
     def command_help(self, rest, nick, channel, user_host):
-        return self.msgs_help
-
-    def command_updatestatus(self, rest, nick, channel, user_host):
-        if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):
-            try:
-                self.currentstatus = rest
-                now = datetime.datetime.utcnow()
-                self.statuslastmodtime = "%02d:%02d, %d %s %d" % (now.hour, now.minute, now.day, self.monthsnames[now.month - 1], now.year)
-                self.statuslastmodauthor = nick
-                return "Status updated, " + nick + "."
-            except Exception, err:
-                return "Error updating status, " + nick + ". [%s]" % err
-
-    def command_status(self, rest, nick, channel, user_host):
-        return "Status: " + self.currentstatus + " (Last modified by " + self.statuslastmodauthor + " at " + self.statuslastmodtime + ")"
+        return "Ask for help via !staff"
 
     def command_exit(self, rest, nick, channel, user_host):
         if channel == "#cvn-staff" or (channel in self.oplist.keys() and (nick in self.oplist[channel] or nick in self.voicelist[channel])):

@@ -1,12 +1,5 @@
 
-* Get more variable stuff into config (with option to save to MySQL to preserve
-  it after a restart as well). Live update via "!update" command.
-  - CVNClerkBot.msgs_help
-  - CVNClerkBot.info_help
-  - CVNClerkBot.oplist
-  - CVNClerkBot.voicelist
-
-* Move somewhat static stuff to config file as well (not MySQL):
+* Move somewhat static stuff to a config file (not MySQL):
   - "#cvn-staff"
   - "#cvn-bots"
   - "#countervandalism"
