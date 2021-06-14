@@ -1,0 +1,14 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: pip install pycodestyle
+      # E501: line too long
+      - run: pycodestyle . --ignore=E501

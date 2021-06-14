@@ -1,4 +1,4 @@
-# CVNClerkBot
+# cvn-clerkbot
 #
 # Helperbot for the Countervandalism Network <http://countervandalism.net>.
 # For help on installing, check README.md.
@@ -24,7 +24,7 @@ if config.useMySQL:  # We only need these imports if we want MySQL
 
 class CVNClerkBot(irc.IRCClient):
     gnoticeuser, gnoticemessage = "", ""
-    versionName = 'CVNClerkBot'
+    versionName = 'cvn-clerkbot'
     versionNum = '2.1.0'
     versionEnv = "Python Twisted %s Python %s" % (twisted.version.short(), sys.version.split()[0])
     nickname = config.nickname

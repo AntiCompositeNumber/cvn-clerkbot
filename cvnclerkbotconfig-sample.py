@@ -1,5 +1,3 @@
-# Configuration for CVNClerkBot
-
 # IRC server
 HOST = "irc.libera.chat"
 PORT = 6667

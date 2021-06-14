@@ -1,4 +1,4 @@
--- SQL to create the initial tables for the CVN-ClerkBot database.
+-- SQL to create the initial tables for the cvn-clerkbot database.
 -- Run this in mysql from CLI (or in phpMyAdmin) prior to running the bot if
 -- you have useMySQL=True. The bot expects these tables to exist!
 

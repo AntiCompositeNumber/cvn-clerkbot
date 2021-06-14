@@ -1,8 +1,8 @@
-# CVNClerkBot [![Build Status](https://travis-ci.org/countervandalism/CVNClerkBot.svg?branch=master)](https://travis-ci.org/countervandalism/CVNClerkBot)
+[![Build Status](https://github.com/countervandalism/cvn-clerkbot/actions/workflows/CI.yml/badge.svg)](https://github.com/countervandalism/cvn-clerkbot/actions/workflows/CI.yml)
 
 ## Get started
 
-1. Download [CVNClerkBot](https://github.com/countervandalism/CVNClerkBot)
+1. Download [cvn-clerkbot](https://github.com/countervandalism/cvn-clerkbot)
 
 2. Make sure you have the required packages:
    - `twisted` ([Twisted](https://twistedmatrix.com/))
