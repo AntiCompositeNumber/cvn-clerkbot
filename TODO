@@ -1,5 +1,0 @@
-
-* Move somewhat static stuff to a config file (not MySQL):
-  - "#cvn-staff"
-  - "#cvn-bots"
-  - "#countervandalism"
