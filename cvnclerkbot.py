@@ -3,7 +3,7 @@
 # Helperbot for the Countervandalism Network <http://countervandalism.net>.
 # For help on installing, check README.md.
 #
-# @version 2.0.0 (2016-02-18)
+# @version 3.0.0 (2023-01-10)
 # @author Daniel Salciccioli <sactage@sactage.com>, 2012
 # @author Timo Tijhof <krinklemail@gmail.com>, 2010-2016
 # @license Distributed under the terms of the MIT license.
@@ -25,7 +25,7 @@ if config.useMySQL:  # We only need these imports if we want MySQL
 class CVNClerkBot(irc.IRCClient):
     gnoticeuser, gnoticemessage = "", ""
     versionName = 'cvn-clerkbot'
-    versionNum = '2.1.0'
+    versionNum = '3.0.0'
     versionEnv = "Python Twisted %s Python %s" % (twisted.version.short(), sys.version.split()[0])
     nickname = config.nickname
     password = config.password
@@ -157,7 +157,7 @@ class CVNClerkBot(irc.IRCClient):
             try:
                 self.sqldb = sqlclient(config.sqldbname, config.sqlpw, config.sqluser, config.sqlhost)
                 return nick + ": Reconnected to MySQL server."
-            except Exception, err:
+            except Exception as err:
                 return "Error: " + str(err)
 
     def irc_MODE(self, user, params):
@@ -181,13 +181,13 @@ class CVNClerkBot(irc.IRCClient):
                 if i[0] == 'o':
                     try:
                         self.oplist[channel].remove(i[1])
-                    except Exception, err:
-                        print err
+                    except Exception as err:
+                        print(err)
                 elif i[0] == 'v':
                     try:
                         self.voicelist[channel].remove(i[1])
-                    except Exception, err:
-                        print err
+                    except Exception as err:
+                        print(err)
 
     def irc_RPL_WHOREPLY(self, prefix, params):
         # This is called upon a WHO reply from the server
