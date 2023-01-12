@@ -87,9 +87,9 @@ class CVNClerkBot(irc.IRCClient):
                 except Exception as err:
                     self.msg(channel, str(err.__class__.__name__) + ": " + str(err))
         elif (
-            message.startswith(self.nickname + ':')
-            or message.startswith(self.nickname + ',')
-            or message.startswith(self.nickname)
+            message.startswith(self.nickname + ':') or
+            message.startswith(self.nickname + ',') or
+            message.startswith(self.nickname)
         ):
             if message.lower() == self.nickname.lower() + ', lol' or message.lower() == self.nickname.lower() + ': lol':
                 self.msg(channel, 'lol')
