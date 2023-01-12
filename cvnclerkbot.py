@@ -8,7 +8,6 @@
 # @author Timo Tijhof <krinklemail@gmail.com>, 2010-2016
 # @license Distributed under the terms of the MIT license.
 import sys
-import datetime
 import string
 import twisted
 import threading
